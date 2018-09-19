@@ -9,16 +9,16 @@ using namespace sf;
 class Colloid
 {
 private:
-	Sprite colloidShape;
+    Sprite colloidShape;
 
 public:
-	Colloid();
+    Colloid();
 
-	Vector2f position;
-	float theta;
+    Vector2f position;
+    float theta;
 
-	Sprite getShape();
-	void update(float vel, bool walls);
+    Sprite getShape();
+    void update(float vel, bool walls);
 };
 
 #endif // COLLOID_H_INCLUDED

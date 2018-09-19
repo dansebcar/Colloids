@@ -1,9 +1,3 @@
-// This code and associated files cluster.cpp and colloid.cpp was written
-// by Daniel Carpenter in June - August 2017 for his Master's Project at
-// the University of Edinburgh. Thanks are due to his supervisor, Davide Marenduzzo
-// for helping him along with it and to SFML creator Laurent Gomila for creating
-// an easy to use platform on which to run an interactive graphical physical simulation.
-
 #include "colloid.h"
 #include "cluster.h"
 #include "parameter.h"
@@ -21,15 +15,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-/*
-for (int i = 0; i < p::gridSize; i++) {
-for (int j = 0; j < p::gridSize; j++) {
-
-}
-}
-*/
-
-// Avoid having to put sf in front of all the SFML classes and functions
 using namespace sf;
 
 int fix(int x, int N); // Fixes an out-of-bounds lattice site
@@ -47,11 +32,11 @@ float dist2d(float x1, float x2, float y1, float y2);
 
 int main()
 {
-	/* Data gathering
-	**********************************************************************/
+    /* Data gathering
+    **********************************************************************/
     bool dataGathering = 0;
 
-    bool routine = 1;
+    bool routine = 0;
     int routineNo = 0;
     int maxRoutines = 20;
     std::string routineDescription = "";
@@ -62,59 +47,59 @@ int main()
     int numParams = 9;
     std::vector<std::string> params(numParams);
     params = { "diffCo", "decayRate", "colVelocity", "production", "backProd", "frontDest", "colShift", "chemCoup", "rotDiff" };
-	// Don't forget to check the initial value
-	std::string indepVbl = "colVelocity";
+    // Don't forget to check the initial value
+    std::string indepVbl = "colVelocity";
 
     float indepVblEnd = 1.2;
     float indepVblStart = getParam(indepVbl);
 
-	int warmUpSteps = 7.5 * 1000;
-	int stepsPerDump = 25;
+    int warmUpSteps = 7.5 * 1000;
+    int stepsPerDump = 25;
     int numIncs = 15;
     int dumpsPerRun = 60;
-	int runsPerInc = 30;
+    int runsPerInc = 30;
 
-	if (outputType == "clusHist") { numIncs = 0; }
-	if (outputType == "collHist") { numIncs = 0; }
-	if (outputType == "clusPos") { numIncs = 0; runsPerInc = 1; stepsPerDump = 10; }
+    if (outputType == "clusHist") { numIncs = 0; }
+    if (outputType == "collHist") { numIncs = 0; }
+    if (outputType == "clusPos") { numIncs = 0; runsPerInc = 1; stepsPerDump = 10; }
 
     int outHistBins = 200;
-	int clusHistMaxColls = 200;
+    int clusHistMaxColls = 200;
 
     // Chemical initialisation (choose from: Gauss, unif, rand, wallTest, column, row, tlc, cbar, vgrad) otherwise null
-	std::string chemIni = "rand";
+    std::string chemIni = "rand";
 
     // Colors
     Color bgcolor = Color(240, 190, 20); // was (128, 255, 128)
     Color wallColor = Color(102, 51, 0, 50);
     Color clusGreen = Color(0, 128, 0);
 
-	// Dependent
-	int numOfColloids = p::maxColloids;
+    // Dependent
+    int numOfColloids = p::maxColloids;
     int simStep = 0;
-	float indepVblInc = 0;
-	if (numIncs != 0) indepVblInc = (float)(indepVblEnd - getParam(indepVbl)) / numIncs;
-	int dumpsPerInc = dumpsPerRun * runsPerInc;
-	int numRuns = runsPerInc * (numIncs + 1);
-	int maxClusters = (int)ceil(p::maxBinCols * p::maxBinRows / 2) + 3;
-	int curPoint = 0;
+    float indepVblInc = 0;
+    if (numIncs != 0) indepVblInc = (float)(indepVblEnd - getParam(indepVbl)) / numIncs;
+    int dumpsPerInc = dumpsPerRun * runsPerInc;
+    int numRuns = runsPerInc * (numIncs + 1);
+    int maxClusters = (int)ceil(p::maxBinCols * p::maxBinRows / 2) + 3;
+    int curPoint = 0;
 
-	float clusHistWidth = (float)clusHistMaxColls / outHistBins;
+    float clusHistWidth = (float)clusHistMaxColls / outHistBins;
 
-	std::vector<float> indepVblVal(numIncs + 1);
-	for (int i = 0; i < numIncs + 1; i++)
+    std::vector<float> indepVblVal(numIncs + 1);
+    for (int i = 0; i < numIncs + 1; i++)
     {
         indepVblVal[i] = getParam(indepVbl) + i * indepVblInc;
     }
 
-	// Dummies
+    // Dummies
     int curRun = 0;
     int curInc = 0;
-	std::vector<float> depVbl(dumpsPerInc * (numIncs + 1), 0);
-	std::vector<float> depVblAve(numIncs + 1, 0);
-	std::vector<float> depVblStdDev(numIncs + 1, 0);
-	std::vector<float> outHist(outHistBins, 0);
-	std::vector<int> dumps(numIncs + 1, 0);
+    std::vector<float> depVbl(dumpsPerInc * (numIncs + 1), 0);
+    std::vector<float> depVblAve(numIncs + 1, 0);
+    std::vector<float> depVblStdDev(numIncs + 1, 0);
+    std::vector<float> outHist(outHistBins, 0);
+    std::vector<int> dumps(numIncs + 1, 0);
 
     /* File initialisation
     **********************************************************************/
@@ -124,7 +109,7 @@ int main()
     fileName += ".txt";
 
     std::ofstream outputFile;
-	if (dataGathering)
+    if (dataGathering)
     {
         outputFile.open(fileName);
 
@@ -144,7 +129,7 @@ int main()
         outputFile << fileHeader;
     }
 
-	// Fields
+    // Fields
     std::vector<float> chem(p::latCols * p::latRows, 0);
     std::vector<float> chemProduction(p::latCols * p::latRows, 0);
     std::vector<float> bins(p::maxBinCols * p::maxBinRows, 0);
@@ -173,10 +158,10 @@ int main()
         if (p::walls && i <= 1) randColors[i] = clusGreen;
     }
 
-	// Seed the random number generator
-	srand((unsigned)time(0));
+    // Seed the random number generator
+    srand((unsigned)time(0));
 
-	// Make the window
+    // Make the window
     RenderWindow window(VideoMode(p::winWidth, p::winHeight), "Janus Colloids");
 
     // User controlled bools
@@ -200,36 +185,36 @@ int main()
     bool outputToConsole = false;
     int chemWentNeg = 0;
 
-	// Texture for colloid
-	Texture janus;
-	janus.loadFromFile("j60.png");
+    // Texture for colloid
+    Texture janus;
+    janus.loadFromFile("j60.png");
 
-	// The font for the HUD
-	Font font;
-	font.loadFromFile("Anonymous.ttf");
+    // The font for the HUD
+    Font font;
+    font.loadFromFile("Anonymous.ttf");
 
-	// Results
+    // Results
     float aveChem = 0;
-	float chemStdDev = 0;
-	float aveSep = 0;
-	float maxSep = 0;
-	int numClusters = 0;
-	int numValidClusters = 0;
-	int numPurgedClusters = 0;
-	float aveClusSize = 0;
-	float clusSizeStdDev = 0;
-	float aveClusDeny = 0;
-	float clusDenyStdDev = 0;
-	int numColloidsInClusters = 0;
+    float chemStdDev = 0;
+    float aveSep = 0;
+    float maxSep = 0;
+    int numClusters = 0;
+    int numValidClusters = 0;
+    int numPurgedClusters = 0;
+    float aveClusSize = 0;
+    float clusSizeStdDev = 0;
+    float aveClusDeny = 0;
+    float clusDenyStdDev = 0;
+    int numColloidsInClusters = 0;
     int firstNormClus = 1;
     if (p::walls && wallClusters) firstNormClus = 3;
     float histTileSize = (float)p::boxHeight / p::binRows;
 
-	/* Simulation loop
-	**********************************************************************/
-	while (window.isOpen())
-	{
-	    if (1)
+    /* Simulation loop
+    **********************************************************************/
+    while (window.isOpen())
+    {
+        if (1)
         {
             /* Handle user input
             **********************************************************************/
@@ -389,7 +374,7 @@ int main()
             }
         } // End of if "inputting"
 
-		if (resetting)
+        if (resetting)
         {
             /* ROUTINE
             **********************************************************************/
@@ -726,17 +711,17 @@ int main()
             warmedUp = false;
         } // End of if "resetting"
 
-		/* Analysis of data
-		**********************************************************************
-		**********************************************************************
-		**********************************************************************/
+        /* Analysis of data
+        **********************************************************************
+        **********************************************************************
+        **********************************************************************/
 
         int lowerBound = 0;
         int upperBound = p::binRows;
 
-		// Don't print every step
-		if (simStep % stepsPerDump == 0 || simStep % p::simSkip == 0 || paused)
-		{
+        // Don't print every step
+        if (simStep % stepsPerDump == 0 || simStep % p::simSkip == 0 || paused)
+        {
             /* Chemical concentration
             **********************************************************************/
             aveChem = 0;
@@ -1281,9 +1266,9 @@ int main()
                     }
                 }
             } // End of dataGathering
-		}
+        }
 
-		if ((float)numColloidsInClusters / numOfColloids > 0.9 && !warmedUp)
+        if ((float)numColloidsInClusters / numOfColloids > 0.9 && !warmedUp)
         {
             std::cout << "Warmed up at: " << simStep << "\n";
             warmedUp = true;
@@ -1298,13 +1283,13 @@ int main()
             // Clear the frame first!
             window.clear(bgcolor);
 
-			// Display
-			if (drawing)
-			{
-				Uint8 shade;
-				RectangleShape tile;
+            // Display
+            if (drawing)
+            {
+                Uint8 shade;
+                RectangleShape tile;
 
-				if (!histView)
+                if (!histView)
                 {
                     tile.setSize({ (float)p::tileSize * p::boxToWin, (float)p::tileSize * p::boxToWin });
 
@@ -1484,30 +1469,30 @@ int main()
                     }
                 }
 
-				// The bigbox covers colloids which pass over the edge of the simulation
-				RectangleShape bigbox;
-				bigbox.setFillColor(bgcolor);
-				bigbox.setPosition({ p::boxWidth * p::boxToWin, 0 });
-				bigbox.setSize({ (float)p::winWidth - p::boxWidth * p::boxToWin, p::boxHeight * p::boxToWin });
+                // The bigbox covers colloids which pass over the edge of the simulation
+                RectangleShape bigbox;
+                bigbox.setFillColor(bgcolor);
+                bigbox.setPosition({ p::boxWidth * p::boxToWin, 0 });
+                bigbox.setSize({ (float)p::winWidth - p::boxWidth * p::boxToWin, p::boxHeight * p::boxToWin });
 
-				window.draw(bigbox);
-			} // End of if "drawing"
+                window.draw(bigbox);
+            } // End of if "drawing"
 
-			// Draw the hud
-			std::stringstream ss;
-			if (routine) ss << routineDescription << "\n\n";
+            // Draw the hud
+            std::stringstream ss;
+            if (routine) ss << routineDescription << "\n\n";
 
-			ss
+            ss
                 << "SimStep : " << simStep << "\n"
-				<< "AveChem : " << std::setw(4) << aveChem << " pm " << chemStdDev << "\n";
+                << "AveChem : " << std::setw(4) << aveChem << " pm " << chemStdDev << "\n";
 
             if (clusterFind)
             {
                 ss
                 << "Clusters: " << numValidClusters << " (" << numPurgedClusters << ") [" << numClusters << "]\n"
-				<< "AveSize : " << std::setprecision(4) << aveClusSize << " pm " << clusSizeStdDev << " > " << p::minClusSize << "\n"
-				<< "AveDeny : " << aveClusDeny << " pm " << clusDenyStdDev << " > " << p::minClusDeny << "\n"
-				<< "%ofColls: " << (float)numColloidsInClusters / numOfColloids * 100 << "%\n";
+                << "AveSize : " << std::setprecision(4) << aveClusSize << " pm " << clusSizeStdDev << " > " << p::minClusSize << "\n"
+                << "AveDeny : " << aveClusDeny << " pm " << clusDenyStdDev << " > " << p::minClusDeny << "\n"
+                << "%ofColls: " << (float)numColloidsInClusters / numOfColloids * 100 << "%\n";
 
                 if (wallClusters)
                 {
@@ -1516,7 +1501,7 @@ int main()
                 }
             }
 
-			if (dataGathering)
+            if (dataGathering)
             {
                 ss
                 << indepVbl << std::setprecision(3) << ": " << indepVblStart << " -> " << indepVblEnd << " (" << indepVblInc << ")\n"
@@ -1525,31 +1510,31 @@ int main()
                 << "CurRun  : " << curRun << " / " << numRuns << "\n";
             }
 
-			Text hud;
-			hud.setFont(font);
-			hud.setCharacterSize((int)round(18 * p::winScale));
-			hud.setFillColor(Color::White);
+            Text hud;
+            hud.setFont(font);
+            hud.setCharacterSize((int)round(18 * p::winScale));
+            hud.setFillColor(Color::White);
 
-			hud.setString(ss.str());
-			hud.setPosition({ p::boxWidth * p::boxToWin + 20 * p::winScale, 20 * p::winScale });
-			window.draw(hud);
+            hud.setString(ss.str());
+            hud.setPosition({ p::boxWidth * p::boxToWin + 20 * p::winScale, 20 * p::winScale });
+            window.draw(hud);
 
-			ss.str(""); // Clears the string
+            ss.str(""); // Clears the string
 
-			ss
-				<< "NumColloids: " << numOfColloids << "\n"
-				<< "Lattice    : " << p::latCols << ", " << p::latRows << "\n"
-				<< "Box        : " << p::boxWidth << ", " << p::boxHeight << "\n"
-				<< "TimeStep   : " << p::timeStep << "\n"
-				<< "DiffCo     : " << p::diffCo << "\n"
-				<< "Decay      : " << p::decayRate << "\n"
-				<< "ColVelocity: " << p::colVelocity << "\n"
-				<< "Production : " << p::production << " (" << p::backProd << ", " << p::frontDest << ")\n"
-				<< "ColShift   : " << p::colShift << " (" << p::shiftRand << ")\n"
-				<< "ChemCoup   : " << p::chemCoup << "\n"
-				<< "RotDiff    : " << p::rotDiff << "\n\n"
+            ss
+                << "NumColloids: " << numOfColloids << "\n"
+                << "Lattice    : " << p::latCols << ", " << p::latRows << "\n"
+                << "Box        : " << p::boxWidth << ", " << p::boxHeight << "\n"
+                << "TimeStep   : " << p::timeStep << "\n"
+                << "DiffCo     : " << p::diffCo << "\n"
+                << "Decay      : " << p::decayRate << "\n"
+                << "ColVelocity: " << p::colVelocity << "\n"
+                << "Production : " << p::production << " (" << p::backProd << ", " << p::frontDest << ")\n"
+                << "ColShift   : " << p::colShift << " (" << p::shiftRand << ")\n"
+                << "ChemCoup   : " << p::chemCoup << "\n"
+                << "RotDiff    : " << p::rotDiff << "\n\n"
 
-				<< "BinLattice : " << p::binCols << ", " << p::binRows << "\n";
+                << "BinLattice : " << p::binCols << ", " << p::binRows << "\n";
 
             if (p::walls)
             {
@@ -1563,15 +1548,15 @@ int main()
             if (!drawing) ss << "notDrawing\n";
             if (chemWentNeg > 0) ss << "chemWentNeg: " << chemWentNeg << "\n";
 
-			float height1 = hud.getGlobalBounds().height;
+            float height1 = hud.getGlobalBounds().height;
 
-			hud.setCharacterSize((int)round(16 * p::winScale));
-			hud.setString(ss.str());
-			hud.setPosition({ p::boxWidth * p::boxToWin + 20 * p::winScale, height1 + 40 * p::winScale });
-			window.draw(hud);
+            hud.setCharacterSize((int)round(16 * p::winScale));
+            hud.setString(ss.str());
+            hud.setPosition({ p::boxWidth * p::boxToWin + 20 * p::winScale, height1 + 40 * p::winScale });
+            window.draw(hud);
 
-			window.display();
-		} // End of if not-skipped
+            window.display();
+        } // End of if not-skipped
 
         /* Output to console
         **********************************************************************/
@@ -1599,39 +1584,39 @@ int main()
             outputToConsole = false;
         }
 
-		/* Update
-		**********************************************************************
-		**********************************************************************
-		**********************************************************************/
+        /* Update
+        **********************************************************************
+        **********************************************************************
+        **********************************************************************/
 
-		if (!paused)
-		{
-			simStep++;
+        if (!paused)
+        {
+            simStep++;
 
-			float curTheta = 0;
-			int curX = 0;
-			int curY = 0;
-			int frontX = 0;
-			int frontY = 0;
-			int backX = 0;
-			int backY = 0;
+            float curTheta = 0;
+            int curX = 0;
+            int curY = 0;
+            int frontX = 0;
+            int frontY = 0;
+            int backX = 0;
+            int backY = 0;
 
-			for (int i = 0; i < numOfColloids; i++)
-			{
+            for (int i = 0; i < numOfColloids; i++)
+            {
                 curTheta = Colloids[i].theta;
 
-				// Site containing ith colloid
-				float randTheta = p::rand01() * p::twoPi;
-				float randRad = p::rand01() * p::shiftRand;
-				curX = (int)round((Colloids[i].position.x + randRad * cos(randTheta)) / p::tileSize);
-				curY = (int)round((Colloids[i].position.y + randRad * sin(randTheta)) / p::tileSize);
+                // Site containing ith colloid
+                float randTheta = p::rand01() * p::twoPi;
+                float randRad = p::rand01() * p::shiftRand;
+                curX = (int)round((Colloids[i].position.x + randRad * cos(randTheta)) / p::tileSize);
+                curY = (int)round((Colloids[i].position.y + randRad * sin(randTheta)) / p::tileSize);
 
-				// Anisotropy
-				backX = (int)round((Colloids[i].position.x - p::colShift * cos(curTheta)) / p::tileSize);
-				backY = (int)round((Colloids[i].position.y - p::colShift * sin(curTheta)) / p::tileSize);
+                // Anisotropy
+                backX = (int)round((Colloids[i].position.x - p::colShift * cos(curTheta)) / p::tileSize);
+                backY = (int)round((Colloids[i].position.y - p::colShift * sin(curTheta)) / p::tileSize);
 
-				frontX = (int)round((Colloids[i].position.x + p::colShift * cos(curTheta)) / p::tileSize);
-				frontY = (int)round((Colloids[i].position.y + p::colShift * sin(curTheta)) / p::tileSize);
+                frontX = (int)round((Colloids[i].position.x + p::colShift * cos(curTheta)) / p::tileSize);
+                frontY = (int)round((Colloids[i].position.y + p::colShift * sin(curTheta)) / p::tileSize);
 
                 if (p::walls)
                 {
@@ -1640,28 +1625,28 @@ int main()
                     frontY = wallSiteCheck(frontY);
                 }
 
-				// Chemical Production
-				chemProduction[index(curX, curY)] += p::production;
-				chemProduction[index(backX, backY)] += p::backProd;
-				chemProduction[index(frontX, frontY)] -= p::frontDest;
+                // Chemical Production
+                chemProduction[index(curX, curY)] += p::production;
+                chemProduction[index(backX, backY)] += p::backProd;
+                chemProduction[index(frontX, frontY)] -= p::frontDest;
 
-				// Rotation in response to chemical (and random wiggle)
-				Colloids[i].theta += (float)sqrt(6 * p::rotDiff * p::timeStep) * p::randpm1() //generateGaussianNoise(0, 1)
-					+ p::timeStep * p::chemCoup * (
-						cos(curTheta) * (chem[index(curX, curY + 1)] - chem[index(curX, curY - 1)]) -
-						sin(curTheta) * (chem[index(curX + 1, curY)] - chem[index(curX - 1, curY)])
-						)  / (2 * p::tileSize);
+                // Rotation in response to chemical (and random wiggle)
+                Colloids[i].theta += (float)sqrt(6 * p::rotDiff * p::timeStep) * p::randpm1() //generateGaussianNoise(0, 1)
+                    + p::timeStep * p::chemCoup * (
+                        cos(curTheta) * (chem[index(curX, curY + 1)] - chem[index(curX, curY - 1)]) -
+                        sin(curTheta) * (chem[index(curX + 1, curY)] - chem[index(curX - 1, curY)])
+                        )  / (2 * p::tileSize);
 
-				if (Colloids[i].theta < 0) Colloids[i].theta += p::twoPi;
-				if (Colloids[i].theta >= p::twoPi) Colloids[i].theta -= p::twoPi;
+                if (Colloids[i].theta < 0) Colloids[i].theta += p::twoPi;
+                if (Colloids[i].theta >= p::twoPi) Colloids[i].theta -= p::twoPi;
 
-				// Move colloid in direction its facing
-				Colloids[i].update(p::colVelocity, p::walls);
-			}
+                // Move colloid in direction its facing
+                Colloids[i].update(p::colVelocity, p::walls);
+            }
 
-			// Update the chemical lattice
-			for (int i = 0; i < p::latCols; i++) {
-				for (int j = 0; j < p::latRows; j++) {
+            // Update the chemical lattice
+            for (int i = 0; i < p::latCols; i++) {
+                for (int j = 0; j < p::latRows; j++) {
 
                     if (p::walls && (j == 0 || j == p::latRows - 1))
                     {
@@ -1690,36 +1675,36 @@ int main()
                         chemWentNeg += 1;
                     }
 
-					chemProduction[index(i, j)] = 0;
-				}
-			}
+                    chemProduction[index(i, j)] = 0;
+                }
+            }
 
-		} // End of if "!paused"
+        } // End of if "!paused"
 
-	}// End of the simulation "while" loop
+    }// End of the simulation "while" loop
 
-	return 0;
+    return 0;
 }
 
 int fix(int x, int N)
 {
-	int a = x;
+    int a = x;
 
-	if (x < 0) a = x + N;
-	if (x >= N) a = x - N;
+    if (x < 0) a = x + N;
+    if (x >= N) a = x - N;
 
-	return a;
+    return a;
 }
 
 float p::rand01()
 {
-	return (float)(rand() - 1) / RAND_MAX;
+    return (float)(rand() - 1) / RAND_MAX;
 }
 
 float p::randpm1()
 {
     float a = (float)0.5 - rand01();
-	return 2 * a;
+    return 2 * a;
 }
 
 float clusAve(float x, int nvc)
@@ -1822,25 +1807,25 @@ void setParam(std::string str, float val)
 // Taken from Wikipedia
 float generateGaussianNoise(const float& mean, const float &stdDev)
 {
-	static bool hasSpare = false;
-	static float spare;
+    static bool hasSpare = false;
+    static float spare;
 
-	if (hasSpare) {
-		hasSpare = false;
-		return mean + stdDev * spare;
-	}
+    if (hasSpare) {
+        hasSpare = false;
+        return mean + stdDev * spare;
+    }
 
-	hasSpare = true;
-	float u, v, s;
-	do {
-		u = p::rand01() * 2.0 - 1.0;
-		v = p::rand01() * 2.0 - 1.0;
-		s = u * u + v * v;
-	} while ((s >= 1.0) || (s == 0.0));
+    hasSpare = true;
+    float u, v, s;
+    do {
+        u = p::rand01() * 2.0 - 1.0;
+        v = p::rand01() * 2.0 - 1.0;
+        s = u * u + v * v;
+    } while ((s >= 1.0) || (s == 0.0));
 
-	s = sqrt(-2.0 * log(s) / s);
-	spare = v * s;
-	return mean + stdDev * u * s;
+    s = sqrt(-2.0 * log(s) / s);
+    spare = v * s;
+    return mean + stdDev * u * s;
 }
 
 int index(int x, int y)
@@ -1882,21 +1867,21 @@ float dist1d(float x1, float x2, float box)
 
 float dist2d(float x1, float x2, float y1, float y2)
 {
-	float smallestDistSq = 4 * p::boxWidth * p::boxHeight; // Answer must be smaller than this
-	float curDistSq = 0;
+    float smallestDistSq = 4 * p::boxWidth * p::boxHeight; // Answer must be smaller than this
+    float curDistSq = 0;
 
-	for (int i = -1; i <= 1; i++) {
-		for (int j = -1; j <= 1; j++) {
-			curDistSq =
-				pow(x2 - x1 + (i + j) * p::boxWidth, 2) +
-				pow(y2 - y1 + (i + j) * p::boxHeight, 2);
+    for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <= 1; j++) {
+            curDistSq =
+                pow(x2 - x1 + (i + j) * p::boxWidth, 2) +
+                pow(y2 - y1 + (i + j) * p::boxHeight, 2);
 
-			if (curDistSq < smallestDistSq)
-			{
-				smallestDistSq = curDistSq;
-			}
-		}
-	}
+            if (curDistSq < smallestDistSq)
+            {
+                smallestDistSq = curDistSq;
+            }
+        }
+    }
 
-	return sqrt(smallestDistSq);
+    return sqrt(smallestDistSq);
 }

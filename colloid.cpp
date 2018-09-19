@@ -7,13 +7,13 @@ Colloid::Colloid()
     position = { 0, 0 };
     theta = 0;
 
-	colloidShape.setOrigin((p::colImageSize) / 2, (p::colImageSize) / 2); // Sets colloid "origin" as centre
+    colloidShape.setOrigin((p::colImageSize) / 2, (p::colImageSize) / 2); // Sets colloid "origin" as centre
 }
 
 Sprite Colloid::getShape()
 {
     colloidShape.setPosition(position * p::boxToWin);
-	return colloidShape;
+    return colloidShape;
 }
 
 void Colloid::update(float vel, bool walls)
@@ -35,17 +35,17 @@ void Colloid::update(float vel, bool walls)
     // Enforce periodic boundary
     if (position.y >= p::boxHeight) position.y -= p::boxHeight;
     if (position.y < 0) position.y += p::boxHeight;
-	if (position.x >= p::boxWidth) position.x -= p::boxWidth;
-	if (position.x < 0) position.x += p::boxWidth;
+    if (position.x >= p::boxWidth) position.x -= p::boxWidth;
+    if (position.x < 0) position.x += p::boxWidth;
 }
 
 float rand01()
 {
-	return (float)(rand() - 1) / RAND_MAX;
+    return (float)(rand() - 1) / RAND_MAX;
 }
 
 float randpm1()
 {
     float a = (float)0.5 - rand01();
-	return 2 * a;
+    return 2 * a;
 }
